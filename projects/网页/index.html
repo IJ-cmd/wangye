@@ -1,0 +1,843 @@
+<!DOCTYPE html>
+<html lang="zh-CN" data-theme="nocturne">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>苏丹的游戏 · Sultan's Game — 一千零一夜的残酷宫廷</title>
+<meta name="description" content="《苏丹的游戏》是一款卡牌驱动的黑暗奇幻叙事 RPG。扮演侍奉苏丹的大臣，七天之内折断苏丹的卡牌，否则身首异处。本站介绍其世界观、玩法、角色与开发历程。" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<!-- 字体异步加载：境外 CDN 不可达时不阻塞首屏渲染，自动降级到本地衬线字体栈 -->
+<link href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=Cinzel:wght@400;600;700&family=Noto+Serif+SC:wght@300;400;600;700&display=swap" rel="stylesheet" media="print" onload="this.media='all'" />
+<noscript><link href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=Cinzel:wght@400;600;700&family=Noto+Serif+SC:wght@300;400;600;700&display=swap" rel="stylesheet" /></noscript>
+<link rel="stylesheet" href="styles.css" />
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='4' fill='%2312305e'/%3E%3Cg fill='none' stroke='%23d4a83c' stroke-width='1.4'%3E%3Crect x='6' y='6' width='20' height='20'/%3E%3Crect x='6' y='6' width='20' height='20' transform='rotate(45 16 16)'/%3E%3C/g%3E%3Ccircle cx='16' cy='16' r='3' fill='%23d4a83c'/%3E%3C/svg%3E" />
+</head>
+<body>
+
+<!-- ============ 全局纹饰定义（不渲染） ============ -->
+<svg class="svg-defs" aria-hidden="true" focusable="false" width="0" height="0">
+  <defs>
+    <!-- 八角星几何纹 · girih（鲁卜河兹布） -->
+    <pattern id="pGirih" width="64" height="64" patternUnits="userSpaceOnUse">
+      <g fill="none" stroke="#c9a227" stroke-width="1.1">
+        <rect x="10" y="10" width="44" height="44"/>
+        <rect x="10" y="10" width="44" height="44" transform="rotate(45 32 32)"/>
+      </g>
+      <circle cx="32" cy="32" r="4.5" fill="none" stroke="#c9a227" stroke-width="1"/>
+      <g fill="#c9a227" fill-opacity=".26">
+        <circle cx="32" cy="10" r="2.1"/><circle cx="32" cy="54" r="2.1"/>
+        <circle cx="10" cy="32" r="2.1"/><circle cx="54" cy="32" r="2.1"/>
+      </g>
+    </pattern>
+    <!-- 藤蔓涡卷 · 阿拉伯纹饰 + 巴洛克卷草 -->
+    <pattern id="pVine" width="128" height="44" patternUnits="userSpaceOnUse">
+      <g fill="none" stroke="#c9a227" stroke-width="1.25" stroke-linecap="round">
+        <path d="M0 22c16-18 30 18 46 0s30 18 46 0 30 18 36 0"/>
+        <path d="M23 22c0-9 7-14 14-11M69 22c0 9 7 14 14 11"/>
+      </g>
+      <g fill="#c9a227" fill-opacity=".3">
+        <circle cx="23" cy="22" r="2"/><circle cx="69" cy="22" r="2"/>
+      </g>
+    </pattern>
+    <!-- 穆卡纳斯蜂窝穹顶 -->
+    <pattern id="pMuq" width="44" height="38" patternUnits="userSpaceOnUse">
+      <path d="M22 0 L44 13 V38 H0 V13 Z" fill="none" stroke="#c9a227" stroke-width="1"/>
+      <path d="M22 0 V13 M0 13 L22 14 L44 13" fill="none" stroke="#c9a227" stroke-width=".75" opacity=".6"/>
+    </pattern>
+
+    <!-- 奥吉拱（伊斯兰火焰拱） -->
+    <symbol id="symArch" viewBox="0 0 340 300">
+      <path d="M6 300V168c0-60 31-95 70-116 31-17 58-38 94-50 36 12 63 33 94 50 39 21 70 56 70 116v132"
+            fill="none" stroke="currentColor" stroke-width="2.6" stroke-linejoin="round"/>
+      <path d="M24 300V170c0-52 27-83 61-101 27-15 51-33 85-44 34 11 58 29 85 44 34 18 61 49 61 101v130"
+            fill="none" stroke="currentColor" stroke-width="1" opacity=".5"/>
+      <path d="M170 2v40" stroke="currentColor" stroke-width="2.2"/>
+      <circle cx="170" cy="52" r="6" fill="currentColor"/>
+    </symbol>
+
+    <!-- 章节纹章：横线 + 棕叶饰 + 星 -->
+    <symbol id="symOrn" viewBox="0 0 200 56">
+      <g fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round">
+        <path d="M4 28h66M130 28h66"/>
+        <path d="M100 8c11 8 15 14 15 20s-4 12-15 20c-11-8-15-14-15-20s4-12 15-20z"/>
+        <path d="M85 28c6-7 11-7 15 0-4 7-9 7-15 0zM115 28c-6-7-11-7-15 0 4 7 9 7 15 0z"/>
+      </g>
+      <g fill="currentColor">
+        <circle cx="58" cy="28" r="2.8"/><circle cx="142" cy="28" r="2.8"/>
+        <circle cx="100" cy="28" r="2.2"/>
+      </g>
+    </symbol>
+
+    <!-- 悬垂的清真寺灯 -->
+    <symbol id="symLamp" viewBox="0 0 40 120">
+      <path d="M20 0v46" stroke="currentColor" stroke-width="1.2"/>
+      <path d="M20 46h-9l-3 34h24l-3-34z" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/>
+      <path d="M8 80l4 34 8-18 8 18 4-34z" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/>
+      <circle cx="20" cy="118" r="2.4" fill="currentColor"/>
+    </symbol>
+
+    <!-- 巴洛克卷草角饰 -->
+    <symbol id="symScroll" viewBox="0 0 80 80">
+      <g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+        <path d="M4 76V20C4 8 12 4 20 4h44"/>
+        <path d="M20 4c-8 0-12 6-10 12s10 8 12 2 2-10-6-10"/>
+        <path d="M64 4c8 2 12 8 10 14s-10 8-12 2"/>
+        <path d="M4 76c10-2 16-8 16-16"/>
+      </g>
+      <circle cx="34" cy="12" r="2.6" fill="currentColor"/>
+    </symbol>
+
+    <!-- 折断裂痕（卡牌碎裂时描边用） -->
+    <symbol id="symCrack" viewBox="0 0 100 140" preserveAspectRatio="none">
+      <path d="M8 0 L44 34 L26 58 L62 78 L38 104 L58 140"
+            fill="none" stroke="currentColor" stroke-width="2.4" stroke-linejoin="round" stroke-linecap="round"/>
+      <path d="M44 34 L86 22 M62 78 L92 92 M38 104 L6 118"
+            fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" opacity=".7"/>
+    </symbol>
+  </defs>
+</svg>
+
+<!-- ============ 壁画肌理层（颗粒 / 裂纹 / 剥落） ============ -->
+<div class="fresco" aria-hidden="true">
+  <div class="fresco-wash"></div>
+  <div class="fresco-grain"></div>
+  <div class="fresco-crack"></div>
+  <div class="fresco-vignette"></div>
+</div>
+
+<!-- ============ 阅读进度条 ============ -->
+<div class="progress-track" aria-hidden="true"><div class="progress-bar" id="progressBar"></div></div>
+
+<a class="skip-link" href="#main">跳转到主要内容</a>
+
+<!-- ============ 导航 ============ -->
+<header class="site-header" id="siteHeader">
+  <div class="header-inner">
+    <a class="brand" href="#hero" aria-label="返回顶部">
+      <svg class="brand-mark" viewBox="0 0 48 48" aria-hidden="true">
+        <g fill="none" stroke="currentColor" stroke-width="2">
+          <rect x="9" y="9" width="30" height="30"/>
+          <rect x="9" y="9" width="30" height="30" transform="rotate(45 24 24)"/>
+        </g>
+        <circle cx="24" cy="24" r="5" fill="currentColor"/>
+      </svg>
+      <span class="brand-text">
+        <strong>苏丹的游戏</strong>
+        <em>SULTAN&rsquo;S GAME</em>
+      </span>
+    </a>
+
+    <nav class="site-nav" id="siteNav" aria-label="主导航">
+      <ul>
+        <li><a href="#hero" class="nav-link is-active">序章</a></li>
+        <li><a href="#world" class="nav-link">世界观</a></li>
+        <li><a href="#cards" class="nav-link">苏丹卡牌</a></li>
+        <li><a href="#gallery" class="nav-link">众生相</a></li>
+        <li><a href="#chronicle" class="nav-link">编年史</a></li>
+        <li><a href="#faq" class="nav-link">FAQ</a></li>
+      </ul>
+    </nav>
+
+    <div class="header-actions">
+      <button class="theme-toggle" id="themeToggle" type="button" aria-label="切换昼夜主题" title="切换昼夜主题">
+        <svg class="icon-sun" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="5"/><g stroke-linecap="round"><path d="M12 2v2M12 20v2M2 12h2M20 12h2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M19.1 4.9l-1.4 1.4M6.3 17.7l-1.4 1.4"/></g></svg>
+        <svg class="icon-moon" viewBox="0 0 24 24" aria-hidden="true"><path d="M20 14.5A8.5 8.5 0 019.5 4a8.5 8.5 0 1010.5 10.5z"/></svg>
+      </button>
+      <button class="menu-toggle" id="menuToggle" type="button" aria-label="打开菜单" aria-expanded="false" aria-controls="siteNav">
+        <span></span><span></span><span></span>
+      </button>
+    </div>
+  </div>
+  <span class="header-rule" aria-hidden="true"></span>
+</header>
+<div class="nav-scrim" id="navScrim" hidden></div>
+
+<main id="main">
+
+<!-- ============ HERO ============ -->
+<section class="hero" id="hero">
+  <div class="hero-bg" aria-hidden="true">
+    <svg class="hero-arch" viewBox="0 0 1200 700" preserveAspectRatio="xMidYMax slice">
+      <defs>
+        <linearGradient id="skyG" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stop-color="#081428"/>
+          <stop offset="38%" stop-color="#12305e"/>
+          <stop offset="72%" stop-color="#26496f"/>
+          <stop offset="100%" stop-color="#3d5f7e"/>
+        </linearGradient>
+        <radialGradient id="moonG" cx="0.5" cy="0.5" r="0.5">
+          <stop offset="0%" stop-color="#ffeab4" stop-opacity=".55"/>
+          <stop offset="45%" stop-color="#e8c366" stop-opacity=".2"/>
+          <stop offset="100%" stop-color="#c9a227" stop-opacity="0"/>
+        </radialGradient>
+        <linearGradient id="domeG" x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0%" stop-color="#159383"/>
+          <stop offset="55%" stop-color="#0e6f65"/>
+          <stop offset="100%" stop-color="#08443f"/>
+        </linearGradient>
+        <linearGradient id="domeGSide" x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0%" stop-color="#12877a"/>
+          <stop offset="100%" stop-color="#06403c"/>
+        </linearGradient>
+        <linearGradient id="wallG" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stop-color="#20456f"/>
+          <stop offset="100%" stop-color="#102542"/>
+        </linearGradient>
+        <linearGradient id="duneG" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stop-color="#2b4363"/>
+          <stop offset="100%" stop-color="#0a1526"/>
+        </linearGradient>
+        <filter id="softH"><feGaussianBlur stdDeviation="14"/></filter>
+        <filter id="softH2"><feGaussianBlur stdDeviation="5"/></filter>
+      </defs>
+
+      <!-- 夜空 -->
+      <rect width="1200" height="700" fill="url(#skyG)"/>
+
+      <!-- 月与光晕 -->
+      <circle cx="930" cy="150" r="230" fill="url(#moonG)"/>
+      <circle cx="930" cy="150" r="58" fill="#f6dd9c" opacity=".92"/>
+      <circle cx="944" cy="140" r="50" fill="#12305e" opacity=".85"/>
+      <circle cx="930" cy="150" r="58" fill="none" stroke="#ffeab4" stroke-width="1.5" opacity=".5"/>
+
+      <!-- 星 -->
+      <g fill="#fdf3d8">
+        <circle cx="120" cy="72" r="1.7" opacity=".6"/><circle cx="228" cy="150" r="1.1" opacity=".4"/>
+        <circle cx="316" cy="56" r="1.9" opacity=".65"/><circle cx="404" cy="126" r="1.2" opacity=".35"/>
+        <circle cx="496" cy="80" r="1.5" opacity=".45"/><circle cx="600" cy="52" r="1.2" opacity=".38"/>
+        <circle cx="690" cy="132" r="1.6" opacity=".5"/><circle cx="782" cy="66" r="1.3" opacity=".4"/>
+        <circle cx="1064" cy="86" r="1.5" opacity=".45"/><circle cx="1150" cy="160" r="1.2" opacity=".35"/>
+        <circle cx="62" cy="212" r="1.3" opacity=".33"/><circle cx="352" cy="212" r="1.1" opacity=".3"/>
+        <circle cx="1108" cy="256" r="1.4" opacity=".36"/>
+      </g>
+      <!-- 八芒星 -->
+      <g stroke="#f6dd9c" stroke-width="1" fill="none" opacity=".5">
+        <g transform="translate(180,120)"><rect x="-9" y="-9" width="18" height="18"/><rect x="-9" y="-9" width="18" height="18" transform="rotate(45)"/></g>
+        <g transform="translate(1090,196)"><rect x="-7" y="-7" width="14" height="14"/><rect x="-7" y="-7" width="14" height="14" transform="rotate(45)"/></g>
+      </g>
+
+      <!-- 巴洛克式赭金云带 -->
+      <g filter="url(#softH)" fill="none" stroke-linecap="round">
+        <path d="M-40 190c170-76 300 52 470 16s310-148 540-76" stroke="#8a6a1e" stroke-width="64" opacity=".38"/>
+        <path d="M-30 356c190-74 300 62 480 26s310-158 560-94" stroke="#c9a227" stroke-width="46" opacity=".26"/>
+        <path d="M-50 520c180-84 310 48 490 16s310-138 550-62" stroke="#0e6f65" stroke-width="52" opacity=".3"/>
+      </g>
+      <g filter="url(#softH2)" stroke="#f0d488" fill="none" stroke-linecap="round" opacity=".35">
+        <path d="M0 196c168-64 292 42 446 8s300-128 486-58" stroke-width="2.6"/>
+        <path d="M0 356c188-68 292 58 468 26s300-142 478-88" stroke-width="2"/>
+        <path d="M0 512c176-74 300 46 486 18s306-128 498-64" stroke-width="2.4"/>
+      </g>
+
+      <!-- ============ 宫殿建筑群 ============ -->
+      <!-- 远景次要穹顶 -->
+      <g opacity=".55">
+        <path d="M120 520c-14-40-10-70 6-92 12-16 30-28 44-36 14 8 32 20 44 36 16 22 20 52 6 92z" fill="url(#domeGSide)"/>
+        <path d="M986 520c-14-40-10-70 6-92 12-16 30-28 44-36 14 8 32 20 44 36 16 22 20 52 6 92z" fill="url(#domeGSide)"/>
+      </g>
+
+      <!-- 主穹顶基座 -->
+      <rect x="452" y="440" width="296" height="180" fill="url(#wallG)"/>
+      <!-- 多叶拱券门廊 -->
+      <g fill="#081428">
+        <path d="M486 620v-84c0-30 8-52 22-68 14 16 22 38 22 68v84z"/>
+        <path d="M556 620v-92c0-32 9-56 24-72 15 16 24 40 24 72v92z"/>
+        <path d="M630 620v-92c0-32 9-56 24-72 15 16 24 40 24 72v92z"/>
+        <path d="M704 620v-84c0-30 8-52 22-68 14 16 22 38 22 68v84z"/>
+      </g>
+      <g fill="#e8c366" opacity=".5">
+        <path d="M496 620v-82c0-26 7-45 19-60 12 15 19 34 19 60v82z"/>
+        <path d="M566 620v-90c0-28 8-49 21-64 13 15 21 36 21 64v90z"/>
+        <path d="M640 620v-90c0-28 8-49 21-64 13 15 21 36 21 64v90z"/>
+        <path d="M714 620v-82c0-26 7-45 19-60 12 15 19 34 19 60v82z"/>
+      </g>
+
+      <!-- 主洋葱穹顶 -->
+      <path d="M478 448c-16-62-8-106 22-134 28-28 56-46 74-80 12-24 20-38 26-48 6 10 14 24 26 48 18 34 46 52 74 80 30 28 38 72 22 134z" fill="url(#domeG)"/>
+      <!-- 穹顶金肋 -->
+      <g fill="none" stroke="#e8c366" stroke-width="2" opacity=".75">
+        <path d="M600 190c-32 44-64 92-92 130c-14 20-22 44-26 128"/>
+        <path d="M600 190c32 44 64 92 92 130c14 20 22 44 26 128"/>
+        <path d="M600 190c-18 48-34 96-46 146c-6 26-10 66-12 112"/>
+        <path d="M600 190c18 48 34 96 46 146c6 26 10 66 12 112"/>
+        <path d="M600 190v258"/>
+      </g>
+      <!-- 穹顶鼓座与顶端新月 -->
+      <rect x="462" y="440" width="276" height="14" fill="#1b3c60"/>
+      <path d="M600 188v-34" stroke="#e8c366" stroke-width="3"/>
+      <path d="M600 154c-9 0-15 6-15 13s6 13 15 13c6 0 10-3 12-7 4 8-1 15-9 15-9 0-16-8-16-21s7-21 16-21c6 0 10 2 12 6z" fill="#f6dd9c"/>
+
+      <!-- 宣礼塔 -->
+      <g>
+        <!-- 左主塔 -->
+        <path d="M286 640V286h30v354z" fill="url(#wallG)"/>
+        <path d="M280 296h42v12h-42z" fill="#1b3c60"/>
+        <path d="M296 296V246l10-22 10 22v50z" fill="#12877a"/>
+        <path d="M301 700V336h12v364z" fill="#0d2f4e"/>
+        <path d="M301 330h12" stroke="#e8c366" stroke-width="3"/>
+        <path d="M307 224v-22" stroke="#e8c366" stroke-width="2.5"/>
+        <circle cx="307" cy="198" r="4" fill="#f6dd9c"/>
+        <!-- 右主塔 -->
+        <path d="M884 640V266h30v374z" fill="url(#wallG)"/>
+        <path d="M878 276h42v12h-42z" fill="#1b3c60"/>
+        <path d="M894 276V226l10-22 10 22v50z" fill="#12877a"/>
+        <path d="M899 700V316h12v384z" fill="#0d2f4e"/>
+        <path d="M899 310h12" stroke="#e8c366" stroke-width="3"/>
+        <path d="M905 204v-22" stroke="#e8c366" stroke-width="2.5"/>
+        <circle cx="905" cy="178" r="4" fill="#f6dd9c"/>
+        <!-- 次塔 -->
+        <path d="M170 660V400h20v260z" fill="#123a5e"/>
+        <path d="M166 410h28v9h-28z" fill="#1b3c60"/>
+        <path d="M176 410V368l5-14 5 14v42z" fill="#0e6f65"/>
+        <path d="M181 368v-16" stroke="#e8c366" stroke-width="2"/>
+        <circle cx="181" cy="348" r="3" fill="#f6dd9c"/>
+        <path d="M1010 660V420h20v240z" fill="#123a5e"/>
+        <path d="M1006 430h28v9h-28z" fill="#1b3c60"/>
+        <path d="M1016 430V390l5-14 5 14v40z" fill="#0e6f65"/>
+        <path d="M1021 390v-16" stroke="#e8c366" stroke-width="2"/>
+        <circle cx="1021" cy="370" r="3" fill="#f6dd9c"/>
+      </g>
+
+      <!-- 侧翼连廊（多叶拱） -->
+      <g fill="#123a5e">
+        <path d="M330 660v-96c0-34 9-58 24-74 15 16 24 40 24 74v96z"/>
+        <path d="M400 660v-96c0-34 9-58 24-74 15 16 24 40 24 74v96z"/>
+        <path d="M752 660v-96c0-34 9-58 24-74 15 16 24 40 24 74v96z"/>
+        <path d="M822 660v-96c0-34 9-58 24-74 15 16 24 40 24 74v96z"/>
+      </g>
+
+      <!-- 旗（茜草红大胆色块） -->
+      <g>
+        <path d="M307 250h58l-14 12 14 12h-58z" fill="#c1272d"/>
+        <path d="M905 230h58l-14 12 14 12h-58z" fill="#c1272d"/>
+      </g>
+
+      <!-- 柏树（波斯细密画元素） -->
+      <g fill="#06281f">
+        <path d="M96 660c-16-40-20-80 0-126 20 46 16 86 0 126z"/>
+        <path d="M1124 660c-16-40-20-80 0-126 20 46 16 86 0 126z"/>
+        <path d="M214 672c-12-32-14-62 0-98 14 36 12 66 0 98z" opacity=".8"/>
+        <path d="M1000 672c-12-32-14-62 0-98 14 36 12 66 0 98z" opacity=".8"/>
+      </g>
+
+      <!-- 地面与沙丘 -->
+      <path d="M0 656h1200v44H0z" fill="#0b1e38"/>
+      <path d="M0 700c180-30 350-42 540-28s420 32 660 12v16z" fill="url(#duneG)"/>
+    </svg>
+  </div>
+
+  <!-- 悬垂宫灯（巴洛克华丽构图） -->
+  <div class="hero-lamps" aria-hidden="true">
+    <svg class="lamp lamp-l" viewBox="0 0 40 120"><use href="#symLamp"/></svg>
+    <svg class="lamp lamp-r" viewBox="0 0 40 120"><use href="#symLamp"/></svg>
+  </div>
+
+  <!-- 奥吉拱画框 -->
+  <div class="hero-archframe" aria-hidden="true">
+    <svg viewBox="0 0 340 300" preserveAspectRatio="xMidYMax meet"><use href="#symArch"/></svg>
+  </div>
+
+  <div class="hero-inner container">
+    <p class="eyebrow reveal">一千零一夜 · 黑暗奇幻叙事 RPG</p>
+    <h1 class="hero-title reveal" data-delay="1">
+      <span class="title-line">苏丹的</span>
+      <span class="title-line title-gold">游戏</span>
+    </h1>
+    <p class="hero-sub reveal" data-delay="2">
+      每周抽取一张苏丹的卡牌。<br />
+      七日之内将其折断&mdash;&mdash;否则，斩首。
+    </p>
+    <div class="hero-cta reveal" data-delay="3">
+      <a href="#world" class="btn btn-primary">
+        <span>进入这座宫廷</span>
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+      </a>
+      <a href="#cards" class="btn btn-ghost">查看四类卡牌</a>
+    </div>
+
+    <dl class="hero-stats reveal" data-delay="4">
+      <div><dt>首周销量</dt><dd data-count="25" data-suffix="万+">0</dd></div>
+      <div><dt>Steam 好评</dt><dd data-count="93" data-suffix="%">0</dd></div>
+      <div><dt>剧本总量</dt><dd data-count="300" data-suffix="万字">0</dd></div>
+      <div><dt>苏丹卡牌</dt><dd data-count="28" data-suffix="张">0</dd></div>
+    </dl>
+  </div>
+
+  <a href="#world" class="scroll-hint" aria-label="向下滚动">
+    <span class="scroll-line"></span>
+    <span class="scroll-text">向下</span>
+  </a>
+</section>
+
+<!-- 纹饰带 -->
+<div class="arabesque-band" aria-hidden="true"><svg viewBox="0 0 256 44" preserveAspectRatio="xMidYMid slice"><rect width="256" height="44" fill="url(#pVine)"/></svg></div>
+
+<!-- ============ 世界观 ============ -->
+<section class="section s-field s-lapis" id="world">
+  <div class="container">
+    <header class="section-head reveal">
+      <span class="ornament" aria-hidden="true">
+        <svg viewBox="0 0 200 56"><use href="#symOrn"/></svg>
+      </span>
+      <p class="section-kicker">Chapter I</p>
+      <h2 class="section-title">被诅咒的七天</h2>
+      <p class="section-lead">
+        异国来的女术士向苏丹献上一副牌。此后，王国的每一次夜宴、每一场婚嫁、每一滴流血，
+        都成了苏丹桌上的一局棋。而你&mdash;&mdash;那个冒死直言的臣子&mdash;&mdash;成了最新的一枚棋子。
+      </p>
+    </header>
+
+    <div class="grid-3">
+      <article class="card reveal" data-delay="1">
+        <span class="card-inlay" aria-hidden="true"><svg viewBox="0 0 64 64"><use href="#symScroll"/></svg></span>
+        <div class="card-icon" aria-hidden="true">
+          <svg viewBox="0 0 48 48"><rect x="12" y="6" width="24" height="36" rx="3"/><circle cx="24" cy="18" r="6"/><path d="M18 34h12"/></svg>
+        </div>
+        <h3>抽牌</h3>
+        <p>每周从奢靡、纵欲、杀戮、征服四类卡牌中抽取一张。牌面即命令，苏丹从不做解释。</p>
+      </article>
+      <article class="card reveal" data-delay="2">
+        <span class="card-inlay" aria-hidden="true"><svg viewBox="0 0 64 64"><use href="#symScroll"/></svg></span>
+        <div class="card-icon" aria-hidden="true">
+          <svg viewBox="0 0 48 48"><circle cx="24" cy="24" r="17"/><path d="M24 13v11l8 5"/></svg>
+        </div>
+        <h3>七日之限</h3>
+        <p>七日之内必须折断这张卡。逾期，刽子手已在殿外等候&mdash;&mdash;且永无第二次机会。</p>
+      </article>
+      <article class="card reveal" data-delay="3">
+        <span class="card-inlay" aria-hidden="true"><svg viewBox="0 0 64 64"><use href="#symScroll"/></svg></span>
+        <div class="card-icon" aria-hidden="true">
+          <svg viewBox="0 0 48 48"><path d="M24 5l6 12 13 2-9.5 9 2.5 13L24 34.5 12 41l2.5-13L5 19l13-2z"/></svg>
+        </div>
+        <h3>抉择</h3>
+        <p>完成命令的方式由你决定。可以做谗臣，也可以暗中磨刀&mdash;&mdash;但每一次越界，都会有人记住。</p>
+      </article>
+    </div>
+
+    <div class="quote-block reveal">
+      <svg class="quote-mark" viewBox="0 0 48 48" aria-hidden="true"><path d="M10 34c0-9 4-14 10-16l2 4c-4 2-6 5-6 8h6v8H10zm18 0c0-9 4-14 10-16l2 4c-4 2-6 5-6 8h6v8H28z"/></svg>
+      <blockquote>
+        极端的行径会招来仇恨与报复。当多行不义，即使最爱你的妻子也会离你而去。
+      </blockquote>
+      <cite>&mdash;&mdash; 官方世界观描述</cite>
+    </div>
+
+    <div class="feature-split">
+      <div class="feature-text reveal">
+        <p class="section-kicker">Chapter II</p>
+        <h3 class="feature-title">回合制资源管理</h3>
+        <p>
+          游戏以「天」为单位推进。每天你要在打理家业、上朝议事、浴场周旋、荒漠探险、
+          图书研习与种种突发事件之间分配行动点数，把随从、金币、情报与装备这张网一点点织起来。
+        </p>
+        <ul class="feature-list">
+          <li><strong>派系与人脉</strong>&mdash;&mdash;招募常驻角色，解锁只属于他们的结局分支</li>
+          <li><strong>属性驱动</strong>&mdash;&mdash;智慧、魅力、体魄、战斗、生存影响事件成功率</li>
+          <li><strong>声望系统</strong>&mdash;&mdash;权势、善名、恶名相互制衡，牵动结局走向</li>
+          <li><strong>命运点数</strong>&mdash;&mdash;局外成长，解锁强力盟友、装备与额外剧情</li>
+        </ul>
+      </div>
+      <div class="feature-visual reveal" data-delay="2">
+        <svg viewBox="0 0 400 340" role="img" aria-label="资源与属性体系示意图">
+          <defs>
+            <linearGradient id="gA" x1="0" y1="0" x2="1" y2="1">
+              <stop offset="0%" stop-color="#123a5e"/><stop offset="100%" stop-color="#081428"/>
+            </linearGradient>
+          </defs>
+          <rect width="400" height="340" rx="10" fill="url(#gA)" stroke="#c9a227" stroke-width="1.6"/>
+          <rect x="9" y="9" width="382" height="322" rx="6" fill="none" stroke="#c9a227" stroke-width=".8" opacity=".45"/>
+          <g stroke="#c9a227" stroke-width="1" opacity=".3">
+            <rect x="9" y="9" width="24" height="24"/><rect x="367" y="9" width="24" height="24"/>
+            <rect x="9" y="307" width="24" height="24"/><rect x="367" y="307" width="24" height="24"/>
+          </g>
+          <g fill="none" stroke="#e8c366" stroke-width="1.2" opacity=".7">
+            <circle cx="200" cy="170" r="52"/>
+            <circle cx="200" cy="170" r="86" stroke-dasharray="4 7"/>
+            <path d="M200 84v-22M200 278v22M114 170H92M308 170h-22"/>
+          </g>
+          <g fill="#f6dd9c" font-family="'Noto Serif SC',serif" font-size="13" text-anchor="middle">
+            <text x="200" y="166">苏丹的</text><text x="200" y="186">命令</text>
+          </g>
+          <g font-family="'Noto Serif SC',serif" font-size="12.5" text-anchor="middle">
+            <g><rect x="26" y="130" width="86" height="34" rx="4" fill="#0e6f65" stroke="#c9a227"/><text x="69" y="151" fill="#f3ead8">盟友</text></g>
+            <g><rect x="288" y="130" width="86" height="34" rx="4" fill="#0e6f65" stroke="#c9a227"/><text x="331" y="151" fill="#f3ead8">资源</text></g>
+            <g><rect x="157" y="24" width="86" height="34" rx="4" fill="#8a1f26" stroke="#e8c366"/><text x="200" y="45" fill="#f6dd9c">属性</text></g>
+            <g><rect x="157" y="282" width="86" height="34" rx="4" fill="#8a1f26" stroke="#e8c366"/><text x="200" y="303" fill="#f6dd9c">结局</text></g>
+          </g>
+          <g stroke="#e8c366" stroke-width="1" opacity=".45" stroke-dasharray="3 5">
+            <path d="M112 147h44M244 147h44M200 58v40M200 242v40"/>
+          </g>
+        </svg>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 卡牌（核心交互：轮播 + 折断 + 标签切换） ============ -->
+<section class="section s-field s-blood" id="cards">
+  <div class="container">
+    <header class="section-head reveal">
+      <span class="ornament" aria-hidden="true">
+        <svg viewBox="0 0 200 56"><use href="#symOrn"/></svg>
+      </span>
+      <p class="section-kicker">Chapter III</p>
+      <h2 class="section-title">四道命令</h2>
+      <p class="section-lead">牌库共二十八张。每类分岩石、青铜、白银、黄金四阶，唯黄金卡仅此一张&mdash;&mdash;它出现的那一周，宫廷里所有人都睡不好。</p>
+      <p class="break-hint">
+        <span aria-hidden="true">✦</span>
+        点住卡面下方的<strong>「折 断」</strong>——金色会转为血色。
+        <span class="break-counter">已折断 <b id="brokenCount">0</b> / <span id="totalCount">0</span></span>
+      </p>
+    </header>
+
+    <!-- 卡牌轮播 -->
+    <div class="carousel reveal" id="carousel" aria-roledescription="轮播" aria-label="苏丹卡牌轮播">
+      <div class="carousel-viewport">
+        <ul class="carousel-track" id="carouselTrack"><!-- JS 注入 --></ul>
+      </div>
+      <div class="carousel-controls">
+        <button class="cbtn" id="prevBtn" type="button" aria-label="上一张">
+          <svg viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></svg>
+        </button>
+        <div class="carousel-dots" id="carouselDots" role="tablist" aria-label="选择卡牌"></div>
+        <button class="cbtn" id="nextBtn" type="button" aria-label="下一张">
+          <svg viewBox="0 0 24 24"><path d="M9 5l7 7-7 7"/></svg>
+        </button>
+      </div>
+    </div>
+
+    <!-- 标签切换详解 -->
+    <div class="tabs reveal">
+      <div class="tab-list" role="tablist" aria-label="卡牌类型详解">
+        <button class="tab is-active" role="tab" id="tab-lust" aria-selected="true" aria-controls="panel-lust" data-key="lust">纵欲<i>Lust</i></button>
+        <button class="tab" role="tab" id="tab-luxury" aria-selected="false" aria-controls="panel-luxury" data-key="luxury">奢靡<i>Luxury</i></button>
+        <button class="tab" role="tab" id="tab-conquest" aria-selected="false" aria-controls="panel-conquest" data-key="conquest">征服<i>Conquest</i></button>
+        <button class="tab" role="tab" id="tab-slay" aria-selected="false" aria-controls="panel-slay" data-key="slay">杀戮<i>Slaughter</i></button>
+      </div>
+
+      <div class="tab-panels">
+        <div class="tab-panel is-active" id="panel-lust" role="tabpanel" aria-labelledby="tab-lust" tabindex="0">
+          <div class="panel-inner">
+            <svg class="panel-sigil" viewBox="0 0 80 80" aria-hidden="true"><path d="M40 8c6 12 20 18 20 32a20 20 0 11-40 0c0-8 6-12 9-19 2 6 5 9 8 9 4 0 5-6 3-22z"/></svg>
+            <div>
+              <h3>纵欲 &mdash;&mdash; 沉溺于床笫之欢</h3>
+              <p>苏丹数不尽的妃嫔、数不清的宠臣，而你手中的牌指向的往往是一个活生生的人。妻子、侍从、路过街头的猫，甚至那头白犀牛&mdash;&mdash;只要你运营得当。</p>
+              <p class="panel-note">代价：纵欲过度会招致伴侣的不忠与离去。你的每一次越界，都有人记在心里。</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="tab-panel" id="panel-luxury" role="tabpanel" aria-labelledby="tab-luxury" tabindex="0" hidden>
+          <div class="panel-inner">
+            <svg class="panel-sigil" viewBox="0 0 80 80" aria-hidden="true"><path d="M40 10l6 14 15 1-11 11 3 15-13-8-13 8 3-15L19 25l15-1z"/><circle cx="40" cy="38" r="5"/></svg>
+            <div>
+              <h3>奢靡 &mdash;&mdash; 挥金如土</h3>
+              <p>金币是这宫廷里唯一不需要解释的东西。修园子、买宝石、赎人、办宴席&mdash;&mdash;苏丹要的从来不是钱，是一种「你愿意为我花到何种地步」的证明。</p>
+              <p class="panel-note">代价：家业若荒废，你就失去了在宫中立脚的全部本钱。</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="tab-panel" id="panel-conquest" role="tabpanel" aria-labelledby="tab-conquest" tabindex="0" hidden>
+          <div class="panel-inner">
+            <svg class="panel-sigil" viewBox="0 0 80 80" aria-hidden="true"><path d="M12 60l28-28M40 32l8-8 16 16-8 8z"/><circle cx="56" cy="24" r="6"/><path d="M12 68l14-4-10-10z"/></svg>
+            <div>
+              <h3>征服 &mdash;&mdash; 深入险境</h3>
+              <p>荒漠探险、竞技场角力、袭击者的巢穴、图王的遗迹。牌面会把你推向前线的刀口，而带回的可能是屠龙勇士的名号，也可能是同伴的尸骨。</p>
+              <p class="panel-note">代价：战斗、生存、属性不足就等着被人抬回来。军功与阴谋，往往同路。</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="tab-panel" id="panel-slay" role="tabpanel" aria-labelledby="tab-slay" tabindex="0" hidden>
+          <div class="panel-inner">
+            <svg class="panel-sigil" viewBox="0 0 80 80" aria-hidden="true"><path d="M20 14l40 52M60 14L20 66"/><circle cx="26" cy="24" r="4"/><circle cx="54" cy="24" r="4"/></svg>
+            <div>
+              <h3>杀戮 &mdash;&mdash; 献祭一条人命</h3>
+              <p>这张卡最干脆，也最不留余地。仇人、政敌、碍眼的下人&mdash;&mdash;名单上的名字由你圈定。但每一具尸体都会在宫中生出新的影子。</p>
+              <p class="panel-note">代价：恶名与仇恨累积。你可以不折断它&mdash;&mdash;只要你付得起让苏丹满意的替代品。</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 众生相（图集 + 灯箱预览） ============ -->
+<section class="section s-field s-turq" id="gallery">
+  <div class="container">
+    <header class="section-head reveal">
+      <span class="ornament" aria-hidden="true">
+        <svg viewBox="0 0 200 56"><use href="#symOrn"/></svg>
+      </span>
+      <p class="section-kicker">Chapter IV</p>
+      <h2 class="section-title">众生相</h2>
+      <p class="section-lead">他们不是任务面板上的图标，而是各有立场、各怀心事的活人。点击任意一位，走进他的故事。</p>
+    </header>
+
+    <p class="gallery-note reveal">
+      以下立绘均为游戏原始美术资源。图集未附官方角色名标注，故以视觉特征与官方 Wiki 角色定位相互对照命名；
+      能确证对应关系的（如苏丹、贝姬夫人）标出真名，无法确证的则以特征称呼，避免张冠李戴。
+    </p>
+
+    <div class="gallery-grid" id="galleryGrid"><!-- JS 注入 --></div>
+
+    <p class="gallery-hint reveal"><span aria-hidden="true">✦</span> 点击卡片查看详细档案</p>
+  </div>
+</section>
+
+<!-- ============ 编年史 ============ -->
+<section class="section s-field s-bitumen" id="chronicle">
+  <div class="container">
+    <header class="section-head reveal">
+      <span class="ornament" aria-hidden="true">
+        <svg viewBox="0 0 200 56"><use href="#symOrn"/></svg>
+      </span>
+      <p class="section-kicker">Chapter V</p>
+      <h2 class="section-title">编年史</h2>
+      <p class="section-lead">从濒临解散的小团队，到国游年榜第三。这条路走了并不轻松。</p>
+    </header>
+
+    <ol class="timeline" id="timeline">
+      <li class="tl-item reveal">
+        <div class="tl-dot" aria-hidden="true"></div>
+        <div class="tl-time">2024.09</div>
+        <div class="tl-body">
+          <h3>Demo 亮相</h3>
+          <p>试玩版在 Steam 发布，凭借大胆的尺度迅速破圈，愿望单突破 10 万。</p>
+        </div>
+      </li>
+      <li class="tl-item reveal">
+        <div class="tl-dot" aria-hidden="true"></div>
+        <div class="tl-time">2025.03.31</div>
+        <div class="tl-body">
+          <h3>正式上线</h3>
+          <p>首周销量超 25 万份，营收突破 2000 万元，好评率约 91%。次月登顶国区 Steam 周销量榜。</p>
+        </div>
+      </li>
+      <li class="tl-item reveal">
+        <div class="tl-dot" aria-hidden="true"></div>
+        <div class="tl-time">2025.06</div>
+        <div class="tl-body">
+          <h3>「秘宝狂想」更新</h3>
+          <p>夏促期间上线十件众筹秘宝装备、Steam 集换式卡牌、社区物品、官方 OST 与原剧情 DLC。</p>
+        </div>
+      </li>
+      <li class="tl-item reveal">
+        <div class="tl-dot" aria-hidden="true"></div>
+        <div class="tl-time">2025.11</div>
+        <div class="tl-body">
+          <h3>大规模扩写</h3>
+          <p>新增约 20 万字内容，总文本量逼近 200 万字，并依据玩家反馈做了多项体验优化。</p>
+        </div>
+      </li>
+      <li class="tl-item reveal">
+        <div class="tl-dot" aria-hidden="true"></div>
+        <div class="tl-time">2025.12</div>
+        <div class="tl-body">
+          <h3>年度大奖</h3>
+          <p>获 INDIE Live Expo 年度大奖，同年以约 140 万销量、1.2 亿元销售额位列国游销量年榜第三。</p>
+        </div>
+      </li>
+      <li class="tl-item reveal">
+        <div class="tl-dot is-major" aria-hidden="true"></div>
+        <div class="tl-time">2026.03.31</div>
+        <div class="tl-body">
+          <h3>一周年「升华之战」</h3>
+          <p>上线以来规模最大的免费更新：新增大量剧情、结局分支与约 180 万字「后日谈」，总文本量突破 300 万字，并补齐结局插画与新增 7 首曲目。</p>
+        </div>
+      </li>
+      <li class="tl-item reveal">
+        <div class="tl-dot" aria-hidden="true"></div>
+        <div class="tl-time">2026.07.24</div>
+        <div class="tl-body">
+          <h3>走出屏幕</h3>
+          <p>移动端由 GameTree 发行上线，首发繁体中文与英文，完整移植端游内容并针对触控优化；已适配鸿蒙系统。</p>
+        </div>
+      </li>
+    </ol>
+  </div>
+</section>
+
+<!-- ============ 评价 ============ -->
+<section class="section s-field s-ivory" id="voices">
+  <div class="container">
+    <header class="section-head reveal">
+      <span class="ornament" aria-hidden="true">
+        <svg viewBox="0 0 200 56"><use href="#symOrn"/></svg>
+      </span>
+      <p class="section-kicker">Chapter VI</p>
+      <h2 class="section-title">来自广场的声音</h2>
+    </header>
+
+    <div class="voices-grid">
+      <figure class="voice reveal">
+        <blockquote>节奏感极好。七天一循环的抽卡机制，加上随时可查的剩余牌池，让人在摸鱼时也能安心推两回合。</blockquote>
+        <figcaption>—— 关于「可预期感」的游玩体验</figcaption>
+      </figure>
+      <figure class="voice reveal" data-delay="1">
+        <blockquote>屠龙少年终成恶龙。当你折断越来越多的卡片、杀掉越来越多的人，这游戏一定会让你想起开局时的自己。</blockquote>
+        <figcaption>—— 论本作的反讽内核</figcaption>
+      </figure>
+      <figure class="voice reveal" data-delay="2">
+        <blockquote>一款带着体温的「浮士德模拟器」。它不歌颂权力，而是让你看清权力如何腐蚀人性。</blockquote>
+        <figcaption>—— 媒体评论</figcaption>
+      </figure>
+    </div>
+  </div>
+</section>
+
+<!-- ============ FAQ ============ -->
+<section class="section s-field s-lapis" id="faq">
+  <div class="container container-narrow">
+    <header class="section-head reveal">
+      <span class="ornament" aria-hidden="true">
+        <svg viewBox="0 0 200 56"><use href="#symOrn"/></svg>
+      </span>
+      <p class="section-kicker">Chapter VII</p>
+      <h2 class="section-title">常见疑问</h2>
+    </header>
+
+    <div class="faq-list" id="faqList">
+      <div class="faq-item reveal">
+        <button class="faq-q" type="button" aria-expanded="false">
+          <span>这是一款什么样的游戏？</span>
+          <svg class="faq-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg>
+        </button>
+        <div class="faq-a"><div class="faq-a-inner"><p>一款带卡牌元素的模拟＋剧情游戏。你扮演侍奉苏丹的大臣，在《一千零一夜》风格的故事里应对致命的挑战与谜题。核心是回合制资源管理、道德抉择与多结局叙事，适合喜欢文字冒险和策略卡牌搭配的玩家。</p></div></div>
+      </div>
+      <div class="faq-item reveal">
+        <button class="faq-q" type="button" aria-expanded="false">
+          <span>一局游戏要玩多久？会不会很长？</span>
+          <svg class="faq-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg>
+        </button>
+        <div class="faq-a"><div class="faq-a-inner"><p>单局节奏以「7 天」为一个循环，随时可以停下，第二天回来继续。折断全部 28 张苏丹卡即完成一周目，之后依靠命运点数解锁新盟友、装备与额外剧情线，可重复游玩。</p></div></div>
+      </div>
+      <div class="faq-item reveal">
+        <button class="faq-q" type="button" aria-expanded="false">
+          <span>新手开局该怎么选角色？</span>
+          <svg class="faq-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg>
+        </button>
+        <div class="faq-a"><div class="faq-a-inner"><p>多数攻略推荐：主角选「激进」性格并加智慧，配偶也优先智慧。早期浴场等场所只有贵族可进，努力属性收益有限，而更高的智慧与社交能让你更顺畅地读书、社交、应对事件。首周建议先玩普通难度熟悉四类卡牌规则。</p></div></div>
+      </div>
+      <div class="faq-item reveal">
+        <button class="faq-q" type="button" aria-expanded="false">
+          <span>现在还能买到吗？在哪玩？</span>
+          <svg class="faq-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg>
+        </button>
+        <div class="faq-a"><div class="faq-a-inner"><p>PC 版在 Steam 销售，国区定价 80 元人民币，支持简体中文、繁体中文、英语与日语。移动端由 Game Tree 发行，已于 2026 年 7 月 24 日上线并适配鸿蒙系统。建议游玩前查看最新折扣活动。</p></div></div>
+      </div>
+      <div class="faq-item reveal">
+        <button class="faq-q" type="button" aria-expanded="false">
+          <span>游戏有争议吗？</span>
+          <svg class="faq-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg>
+        </button>
+        <div class="faq-a"><div class="faq-a-inner"><p>上线初期因「大尺度」内容与部分剧情呈现方式引发过舆论争议，一度影响口碑。工作室随后通过功能调整稳住了评价，目前 Steam 总体好评率约 93%。此外有玩家反馈卡牌命名偏晦涩、引导不足，属已知体验短板。</p></div></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ CTA ============ -->
+<section class="cta-section">
+  <div class="container">
+    <div class="cta-card reveal">
+      <span class="cta-inlay" aria-hidden="true"><svg viewBox="0 0 64 64"><use href="#symScroll"/></svg></span>
+      <svg class="cta-deco" viewBox="0 0 200 56" aria-hidden="true"><use href="#symOrn"/></svg>
+      <h2>七日后，宫廷里会少一个人</h2>
+      <p>或者不会。你有七天时间决定那是别人，还是自己。</p>
+      <a href="#hero" class="btn btn-primary">回到开头<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 19V5M6 11l6-6 6 6"/></svg></a>
+    </div>
+  </div>
+</section>
+
+</main>
+
+<!-- 八芒星几何纹带 -->
+<div class="arabesque-band" aria-hidden="true"><svg viewBox="0 0 256 44" preserveAspectRatio="xMidYMid slice"><rect width="256" height="44" fill="url(#pGirih)"/></svg></div>
+
+<!-- ============ 页脚 ============ -->
+<footer class="site-footer">
+  <div class="container">
+    <div class="footer-top">
+      <div class="footer-brand">
+        <svg class="brand-mark" viewBox="0 0 48 48" aria-hidden="true">
+          <g fill="none" stroke="currentColor" stroke-width="2">
+            <rect x="9" y="9" width="30" height="30"/>
+            <rect x="9" y="9" width="30" height="30" transform="rotate(45 24 24)"/>
+          </g>
+          <circle cx="24" cy="24" r="5" fill="currentColor"/>
+        </svg>
+        <div>
+          <p class="footer-title">苏丹的游戏</p>
+          <p class="footer-sub">Sultan's Game &mdash;&mdash; 非官方介绍站</p>
+        </div>
+      </div>
+      <nav class="footer-nav" aria-label="页脚导航">
+        <a href="#world">世界观</a>
+        <a href="#cards">苏丹卡牌</a>
+        <a href="#gallery">众生相</a>
+        <a href="#chronicle">编年史</a>
+        <a href="#faq">常见疑问</a>
+      </nav>
+    </div>
+    <div class="footer-bottom">
+      <p>本站为玩家制作的非官方介绍页面，文字内容整理自公开资料与官方商店页；角色立绘为游戏原始美术资源，版权归 Double Cross 工作室与 2P Games 所有，此处仅作介绍性展示。</p>
+      <p>游戏本体版权归 Double Cross 工作室与 2P Games 所有。</p>
+    </div>
+  </div>
+</footer>
+
+<!-- ============ 灯箱预览 ============ -->
+<div class="lightbox" id="lightbox" role="dialog" aria-modal="true" aria-labelledby="lbTitle" hidden>
+  <div class="lightbox-backdrop" data-close></div>
+  <div class="lightbox-dialog" role="document">
+    <button class="lightbox-close" id="lbClose" type="button" aria-label="关闭预览">
+      <svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg>
+    </button>
+    <span class="corner tl" aria-hidden="true"></span><span class="corner tr" aria-hidden="true"></span>
+    <span class="corner bl" aria-hidden="true"></span><span class="corner br" aria-hidden="true"></span>
+    <span class="dlg-rule" aria-hidden="true"></span>
+    <figure class="lightbox-figure">
+      <div class="lightbox-art" id="lbArt"></div>
+      <figcaption>
+        <h3 id="lbTitle"></h3>
+        <p class="lb-role" id="lbRole"></p>
+        <p class="lb-desc" id="lbDesc"></p>
+        <ul class="lb-tags" id="lbTags"></ul>
+        <div class="lb-nav">
+          <button class="lb-prev" id="lbPrev" type="button" aria-label="上一位角色">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5l-7 7 7 7"/></svg><span>上一位</span>
+          </button>
+          <span class="lb-count" id="lbCount"></span>
+          <button class="lb-next" id="lbNext" type="button" aria-label="下一位角色">
+            <span>下一位</span><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 5l7 7-7 7"/></svg>
+          </button>
+        </div>
+      </figcaption>
+    </figure>
+  </div>
+</div>
+
+<button class="to-top" id="toTop" type="button" aria-label="回到顶部" hidden>
+  <svg viewBox="0 0 24 24"><path d="M12 19V5M6 11l6-6 6 6"/></svg>
+</button>
+
+<!-- ============ 摧毁卡牌：金 → 血 全屏转场 ============ -->
+<div class="bloodveil" id="bloodveil" aria-hidden="true">
+  <span class="bv-gold"></span>
+  <span class="bv-blood"></span>
+  <span class="bv-splatter s1"></span>
+  <span class="bv-splatter s2"></span>
+  <span class="bv-splatter s3"></span>
+  <span class="bv-splatter s4"></span>
+  <span class="bv-splatter s5"></span>
+  <span class="bv-splatter s6"></span>
+  <span class="bv-veins"></span>
+  <span class="bv-word">已 折 断</span>
+</div>
+
+<script src="script.js"></script>
+</body>
+</html>
